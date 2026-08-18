@@ -1,0 +1,808 @@
+{
+  "components": {
+    "schemas": {
+      "BrightnessPatch": {
+        "description": "Absolute or relative change to the full-screen image brightness.",
+        "examples": [
+          {
+            "brightness": 0.4
+          },
+          {
+            "delta": -0.1
+          }
+        ],
+        "properties": {
+          "brightness": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.02,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brightness"
+          },
+          "delta": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": -1.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delta"
+          }
+        },
+        "title": "BrightnessPatch",
+        "type": "object"
+      },
+      "DisplayPatch": {
+        "description": "One-call switch of what the TV is showing.",
+        "examples": [
+          {
+            "mode": "board"
+          },
+          {
+            "image": "logo-6251cafa.svg"
+          },
+          {
+            "url": "https://example.com/animation.gif"
+          },
+          {
+            "cycle": "next"
+          }
+        ],
+        "properties": {
+          "cycle": {
+            "anyOf": [
+              {
+                "enum": [
+                  "next",
+                  "prev"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cycle"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "board",
+                  "gif"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "title": "DisplayPatch",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Quote": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Lines",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lines"
+        ],
+        "title": "Quote",
+        "type": "object"
+      },
+      "State": {
+        "properties": {
+          "blackout": {
+            "title": "Blackout",
+            "type": "boolean"
+          },
+          "cols": {
+            "default": 22,
+            "maximum": 40.0,
+            "minimum": 10.0,
+            "title": "Cols",
+            "type": "integer"
+          },
+          "displayMode": {
+            "default": "board",
+            "enum": [
+              "board",
+              "gif"
+            ],
+            "title": "Displaymode",
+            "type": "string"
+          },
+          "gifBrightness": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.02,
+            "title": "Gifbrightness",
+            "type": "number"
+          },
+          "gifUrl": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Gifurl",
+            "type": "string"
+          },
+          "intervalSec": {
+            "maximum": 600.0,
+            "minimum": 2.0,
+            "title": "Intervalsec",
+            "type": "integer"
+          },
+          "letterScale": {
+            "default": 0.78,
+            "maximum": 0.95,
+            "minimum": 0.3,
+            "title": "Letterscale",
+            "type": "number"
+          },
+          "muted": {
+            "title": "Muted",
+            "type": "boolean"
+          },
+          "quotes": {
+            "items": {
+              "$ref": "#/components/schemas/Quote"
+            },
+            "title": "Quotes",
+            "type": "array"
+          },
+          "rows": {
+            "default": 4,
+            "maximum": 8.0,
+            "minimum": 2.0,
+            "title": "Rows",
+            "type": "integer"
+          },
+          "sideMarginPx": {
+            "default": 120,
+            "maximum": 600.0,
+            "minimum": 0.0,
+            "title": "Sidemarginpx",
+            "type": "integer"
+          },
+          "topMarginPx": {
+            "default": 80,
+            "maximum": 600.0,
+            "minimum": 0.0,
+            "title": "Topmarginpx",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quotes",
+          "intervalSec",
+          "blackout",
+          "muted"
+        ],
+        "title": "State",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerToken": {
+        "description": "The value of the AUTH_TOKEN environment variable.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Split-flap quote board and full-screen image kiosk for any TV.\n\nTwo display modes: **board** (rotating split-flap quotes) and **gif** (a\nfull-screen image or animation). Switch between them with `POST /api/display`,\ndim the image with `POST /api/gif/brightness`.\n\n## Auth\n\nReads are open on the LAN. Every mutating endpoint needs\n`Authorization: Bearer <token>`, matched against the `AUTH_TOKEN` environment\nvariable the container was started with. A missing header returns 401, a wrong token 403.\n\n## Notes for automated callers\n\n* `PUT /api/state` replaces the **entire** document -- read `GET /api/state`\n  first and send it back mutated, or you will drop the user's quotes. Prefer\n  `POST /api/display` and `POST /api/gif/brightness`, which change one thing.\n* `POST /api/images` takes the file as the **raw request body**, not multipart,\n  with the filename in the `?filename=` query parameter.\n* `GET /api/events` is a Server-Sent Events stream; every state change is\n  published there, so a UI can follow along without polling.\n* State changes persist to disk and survive container restarts.\n",
+    "title": "FlipOff Kiosk",
+    "version": "1.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "kiosk__get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Kiosk"
+      }
+    },
+    "/admin": {
+      "get": {
+        "operationId": "admin_admin_get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Admin"
+      }
+    },
+    "/api/blackout": {
+      "post": {
+        "operationId": "toggle_blackout_api_blackout_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Toggle Blackout Api Blackout Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Toggle Blackout"
+      }
+    },
+    "/api/display": {
+      "post": {
+        "description": "Switch mode and/or image in one call.\n\nPUT /api/state can already do this, but only by round-tripping the whole\ndocument, so a caller that just wants \"show the logo\" has to fetch, mutate\nand repost every quote -- and races anyone editing them. Accepts a gallery\nfilename, a direct URL, or a relative cycle through the gallery.",
+        "operationId": "set_display_api_display_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisplayPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Display Api Display Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Set Display"
+      }
+    },
+    "/api/events": {
+      "get": {
+        "operationId": "events_api_events_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Events"
+      }
+    },
+    "/api/gif/brightness": {
+      "get": {
+        "operationId": "get_gif_brightness_api_gif_brightness_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Gif Brightness Api Gif Brightness Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Gif Brightness"
+      },
+      "post": {
+        "description": "Dim the displayed image without reposting the whole state.\n\nPUT /api/state requires the full document (every quote included), which is\nthe wrong shape for \"make the TV darker\" -- it is heavy from a phone and it\nraces with anyone editing quotes. `delta` lets a caller nudge the screen\nwithout first reading the current value.",
+        "operationId": "set_gif_brightness_api_gif_brightness_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrightnessPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Gif Brightness Api Gif Brightness Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Set Gif Brightness"
+      }
+    },
+    "/api/images": {
+      "get": {
+        "description": "Public list of saved gallery images (newest first).",
+        "operationId": "list_images_api_images_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Images Api Images Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Images"
+      },
+      "post": {
+        "description": "Store an uploaded image. The file is sent as the raw request body and\nits original name comes in via the `filename` query param \u2014 this keeps the\napp free of a multipart dependency.",
+        "operationId": "upload_image_api_images_post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filename",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Filename",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Upload Image Api Images Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Upload Image"
+      }
+    },
+    "/api/images/{name}": {
+      "delete": {
+        "operationId": "delete_image_api_images__name__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Image Api Images  Name  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Delete Image"
+      }
+    },
+    "/api/mute": {
+      "post": {
+        "operationId": "toggle_mute_api_mute_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Toggle Mute Api Mute Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Toggle Mute"
+      }
+    },
+    "/api/next": {
+      "post": {
+        "operationId": "next_quote_api_next_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Next Quote Api Next Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Next Quote"
+      }
+    },
+    "/api/prev": {
+      "post": {
+        "operationId": "prev_quote_api_prev_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prev Quote Api Prev Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Prev Quote"
+      }
+    },
+    "/api/refresh": {
+      "post": {
+        "description": "Tell the kiosk page to hard-reload (pick up new static assets/CSS).",
+        "operationId": "refresh_kiosk_api_refresh_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Refresh Kiosk Api Refresh Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Refresh Kiosk"
+      }
+    },
+    "/api/state": {
+      "get": {
+        "operationId": "get_state_api_state_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get State Api State Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get State"
+      },
+      "put": {
+        "operationId": "put_state_api_state_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/State"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Put State Api State Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerToken": []
+          }
+        ],
+        "summary": "Put State"
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Healthz Healthz Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthz"
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "this kiosk",
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "description": "What the TV is currently showing.",
+      "name": "display"
+    },
+    {
+      "description": "The full state document.",
+      "name": "state"
+    },
+    {
+      "description": "Uploaded images available to display.",
+      "name": "gallery"
+    },
+    {
+      "description": "Transport and screen controls.",
+      "name": "controls"
+    },
+    {
+      "description": "Health, events, and the kiosk pages.",
+      "name": "system"
+    }
+  ]
+}

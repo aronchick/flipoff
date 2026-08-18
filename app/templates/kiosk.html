@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111111">
+  <title>FlipOff</title>
+  <link rel="stylesheet" href="/static/css/reset.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/board.css">
+  <link rel="stylesheet" href="/static/css/tile.css">
+  <link rel="stylesheet" href="/static/css/responsive.css">
+  <style>
+    /* ============================================================
+       Kiosk overrides.
+       Layout math: the board fits inside the viewport with a side
+       margin and top/bottom margin. Square tile size is the smaller
+       of (available width / cols) and (available height / rows).
+       All the tunables come from CSS custom properties set at runtime
+       from window.__KIOSK_CFG__ / the SSE state stream.
+       ============================================================ */
+    :root {
+      --side-margin: 120px;
+      --top-margin: 80px;
+      --letter-scale: 0.78;
+      --grid-cols: 22;
+      --grid-rows: 4;
+    }
+
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: #111; overflow: hidden; cursor: none;
+    }
+    .page-frame, .header, .hero { display: none !important; }
+
+	    .board-section {
+	      position: fixed; inset: 0;
+	      display: flex; align-items: center; justify-content: center;
+	      padding: 0;
+	    }
+	    body.gif-mode .board-section { display: none; }
+
+	    #gif-screen {
+	      position: fixed; inset: 0;
+	      display: none;
+	      align-items: center;
+	      justify-content: center;
+	      background: #000;
+	      z-index: 1000;
+	    }
+	    body.gif-mode #gif-screen { display: flex; }
+	    #gif-screen img {
+	      width: 100vw;
+	      height: 100vh;
+	      object-fit: contain;
+	      /* Dimming is a filter rather than an opacity fade so the black
+	         backdrop behind it never shows through as washed-out grey. */
+	      filter: brightness(var(--gif-brightness, 1));
+	      transition: filter 0.35s ease;
+	    }
+
+    .board, .board-section .board {
+      --tile-gap: 0px !important;
+      --tile-size: min(
+        calc((100vw - 2 * var(--side-margin)) / var(--grid-cols)),
+        calc((100vh - 2 * var(--top-margin)) / var(--grid-rows))
+      ) !important;
+      width: auto !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
+    }
+
+    .board .tile-grid {
+      display: grid !important;
+      grid-template-columns: repeat(var(--grid-cols), var(--tile-size)) !important;
+      grid-template-rows: repeat(var(--grid-rows), var(--tile-size)) !important;
+      gap: 0 !important;
+      width: calc(var(--tile-size) * var(--grid-cols)) !important;
+      height: calc(var(--tile-size) * var(--grid-rows)) !important;
+    }
+
+    .board .tile {
+      width: var(--tile-size) !important;
+      height: var(--tile-size) !important;
+    }
+
+    /* Letter sizing scales with tile-size and user-set letter-scale. */
+    .board .tile-front span,
+    .board .tile-back span {
+      font-size: calc(var(--tile-size) * var(--letter-scale)) !important;
+    }
+
+    /* Hide accent bars and any other chrome under .board */
+    .board > *:not(.tile-grid) { display: none !important; }
+
+    /* Make tile surfaces clearly visible against the black page background
+       so blank rows read as part of the grid instead of disappearing. */
+    .board .tile {
+      background: #1b1d22 !important;
+    }
+    .board .tile-front,
+    .board .tile-back {
+      background: #2e3138 !important;
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.6),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.04) !important;
+    }
+
+    #blackout {
+      position: fixed; inset: 0; background: #000; z-index: 9999;
+      opacity: 0; pointer-events: none; transition: opacity 120ms linear;
+    }
+    body.blackout #blackout { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- Server-rendered initial config. Set BEFORE the module script loads
+       so constants.js picks up rows/cols at import time. -->
+  <script>window.__KIOSK_CFG__ = {{ initial_state_json | safe }};</script>
+
+	  <section class="board-section" id="board-container"></section>
+	  <div id="gif-screen" aria-hidden="true"><img id="gif-image" alt=""></div>
+	  <div id="blackout"></div>
+  <script type="module" src="/static/js/kiosk-main.js"></script>
+</body>
+</html>

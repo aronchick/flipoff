@@ -1,0 +1,147 @@
+/* Page Frame — mock browser window */
+.page-frame {
+  max-width: 1280px;
+  margin: 24px auto;
+  background: #F5F5F5;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 36px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.header-logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.header-nav a {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.header-nav a:hover {
+  color: #000;
+}
+
+.volume-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: #666;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.volume-icon:hover {
+  color: #000;
+}
+
+.volume-icon.muted svg path:last-child,
+.volume-icon.muted svg path:nth-child(2) {
+  display: none;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 56px 24px 44px;
+  flex-shrink: 0;
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.15;
+  max-width: 650px;
+  margin: 0 auto 14px;
+  color: #111;
+}
+
+.hero .subtitle {
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 28px;
+  font-weight: 400;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-cta input {
+  padding: 12px 18px;
+  border: 1.5px solid #E0E0E0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  width: 220px;
+}
+
+.hero-cta input::placeholder {
+  color: #bbb;
+}
+
+.hero-cta input:focus {
+  border-color: #999;
+}
+
+.hero-cta button {
+  padding: 12px 22px;
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.hero-cta button:hover {
+  background: #222;
+}
+
+/* Board Section */
+.board-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 24px 32px;
+}
+
+/* Fullscreen: hide header+hero, board fills viewport */
+.fullscreen-active .header,
+.fullscreen-active .hero {
+  display: none;
+}
+
+.fullscreen-active .board-section {
+  padding: 0;
+  height: 100vh;
+  align-items: center;
+}

@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlipOff Control</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --panel: #15171e;
+      --panel-2: #1d2029;
+      --border: #2a2e3a;
+      --text: #e8ecf1;
+      --muted: #8b93a7;
+      --accent: #00ffcc;
+      --accent-2: #00aaff;
+      --danger: #ff4d00;
+      --ok: #00ff7f;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 24px 20px 80px; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+    }
+    h1 { font-size: 20px; margin: 0; letter-spacing: 0.04em; }
+    h1 span { color: var(--accent); }
+    .conn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--muted);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+    .dot.err { background: var(--danger); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .panel h2 {
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--muted); margin: 0 0 12px;
+    }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .spacer { flex: 1; }
+
+    input[type="text"], input[type="password"], input[type="number"] {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      outline: none; border-color: var(--accent-2);
+    }
+    input[type="range"] { flex: 1; accent-color: var(--accent); }
+    input[type="file"] {
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 12px;
+      max-width: 100%;
+    }
+    input[type="file"]::file-selector-button {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    input[type="file"]::file-selector-button:hover { background: #252935; }
+
+    button {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 80ms, border-color 80ms;
+    }
+    button:hover { background: #252935; }
+    button.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+    button.primary:hover { background: #00ddb5; border-color: #00ddb5; }
+    button.danger { color: var(--danger); border-color: #3a2228; }
+    button.danger:hover { background: #2a1a1e; }
+    button.toggle.on { background: var(--accent); color: #000; border-color: var(--accent); }
+    button.toggle.off { background: var(--panel-2); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .quotes { display: flex; flex-direction: column; gap: 16px; }
+    .quote {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .quote .lines { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .quote .lines input {
+      width: 100%;
+      font-family: inherit;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .quote .controls { display: flex; gap: 6px; margin-top: 10px; }
+    .quote .idx {
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* Mini TV preview per quote: static render of the full board grid. */
+    .quote-preview {
+      background: #111;
+      border: 1px solid #000;
+      border-radius: 4px;
+      padding: 8px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview-grid {
+      display: grid;
+      width: 100%;
+      gap: 0;
+      aspect-ratio: var(--preview-aspect, 5.5);
+    }
+    .preview-tile {
+      background: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      border: 1px solid #111;
+      overflow: hidden;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    /* Image gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .gallery-tile {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .gallery-tile.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 0 10px rgba(0, 255, 204, 0.25);
+    }
+    /* Checkerboard so transparent logos read clearly. */
+    .gallery-thumb {
+      height: 96px;
+      border: 1px solid #000;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      background-color: #0d0d0d;
+      background-image:
+        linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+        linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    }
+    .gallery-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .gallery-name {
+      font-size: 11px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .gallery-actions { display: flex; gap: 6px; }
+    .gallery-actions button { flex: 1; padding: 6px 8px; font-size: 12px; }
+    .gallery-empty { color: var(--muted); font-size: 12px; margin-top: 12px; }
+
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--panel-2); border: 1px solid var(--border);
+      padding: 10px 18px; border-radius: 6px; font-size: 13px;
+      opacity: 0; transition: opacity 200ms;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.ok { border-color: var(--ok); }
+    .toast.err { border-color: var(--danger); }
+
+    .interval-label, .slider-value {
+      min-width: 80px; text-align: right;
+      color: var(--accent); font-variant-numeric: tabular-nums;
+    }
+    .slider-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 80px;
+      align-items: center; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .slider-row label {
+      text-transform: uppercase; letter-spacing: 0.08em;
+      font-size: 11px; color: var(--muted);
+    }
+    .slider-row label small {
+      text-transform: none; letter-spacing: 0;
+      color: #556; font-size: 10px;
+    }
+    @media (max-width: 560px) {
+      .slider-row { grid-template-columns: 1fr 1fr 60px; }
+    }
+
+    @media (max-width: 560px) {
+      .wrap { padding: 16px 12px 60px; }
+      header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>FlipOff <span>Control</span></h1>
+      <div class="conn">
+        <span class="dot" id="conn-dot"></span>
+        <span id="conn-text">connecting…</span>
+      </div>
+    </header>
+
+    <div class="panel">
+      <h2>Auth</h2>
+      <div class="row">
+        <input type="password" id="token" placeholder="bearer token (saved locally)" style="flex:1;min-width:200px">
+        <button id="save-token">Save token</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Display</h2>
+      <div class="row">
+        <button class="toggle" id="btn-blackout">Blackout: off</button>
+        <button class="toggle" id="btn-mute">Mute: off</button>
+        <div class="spacer"></div>
+        <button id="btn-prev">◀ Prev</button>
+        <button id="btn-next">Next ▶</button>
+        <button id="btn-refresh" title="Force the kiosk to hard-reload">↻ Refresh TV</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>GIF screen</h2>
+      <div class="row">
+        <input type="text" id="gif-url" placeholder="https://example.com/image.gif" style="flex:1;min-width:260px">
+        <button id="btn-show-gif" class="toggle primary">Show GIF</button>
+        <button id="btn-show-board" class="toggle">Show board</button>
+      </div>
+      <div class="slider-row">
+        <label>Brightness</label>
+        <input type="range" id="gif-brightness" min="2" max="100" step="1">
+        <span class="slider-value" id="gif-brightness-label">—</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Image gallery</h2>
+      <div class="row">
+        <input type="file" id="img-file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml">
+        <button id="btn-upload" class="primary">Upload</button>
+        <div class="spacer"></div>
+        <button id="btn-gallery-board" class="toggle">Show board</button>
+      </div>
+      <div class="gallery" id="gallery"></div>
+      <div class="gallery-empty" id="gallery-empty">No images yet — upload one above, then hit Show to put it on the TV.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Rotation interval</h2>
+      <div class="row">
+        <input type="range" id="interval" min="3" max="60" step="1">
+        <span class="interval-label" id="interval-label">— s</span>
+        <button id="save-interval" class="primary">Save</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Layout</h2>
+      <div class="slider-row">
+        <label>Side margin</label>
+        <input type="range" id="side-margin" min="0" max="500" step="10">
+        <span class="slider-value" id="side-margin-label">— px</span>
+      </div>
+      <div class="slider-row">
+        <label>Top / bottom margin</label>
+        <input type="range" id="top-margin" min="0" max="500" step="10">
+        <span class="slider-value" id="top-margin-label">— px</span>
+      </div>
+      <div class="slider-row">
+        <label>Letter size</label>
+        <input type="range" id="letter-scale" min="30" max="95" step="1">
+        <span class="slider-value" id="letter-scale-label">—</span>
+      </div>
+      <div class="slider-row">
+        <label>Rows <small>(reloads TV)</small></label>
+        <input type="range" id="rows" min="2" max="8" step="1">
+        <span class="slider-value" id="rows-label">—</span>
+      </div>
+      <div class="slider-row">
+        <label>Columns <small>(reloads TV)</small></label>
+        <input type="range" id="cols" min="10" max="40" step="1">
+        <span class="slider-value" id="cols-label">—</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="spacer"></div>
+        <button id="save-layout" class="primary">Save layout</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Quotes</h2>
+      <div class="quotes" id="quotes"></div>
+      <div class="row" style="margin-top:14px">
+        <button id="btn-add">+ Add quote</button>
+        <div class="spacer"></div>
+        <button id="btn-save-quotes" class="primary">Save quotes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  const state = {
+    token: localStorage.getItem('flipoff-token') || '',
+    remote: null,
+  };
+
+  // Source of truth for in-progress quote edits. null = synced with remote.
+  let editQuotes = null;
+
+  // Last layout signature, so we can detect when layout-affecting state
+  // changes arrive via SSE and force a preview re-render even mid-edit.
+  let lastLayoutKey = null;
+  function layoutSignature(s) {
+    if (!s) return '';
+    return [s.rows, s.cols, s.letterScale, s.sideMarginPx, s.topMarginPx].join('|');
+  }
+
+  function clearChildren(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  // ---------- preview helpers ----------
+  // Ports of kiosk-main.js centerLinesVertically and Board._formatToGrid,
+  // kept in sync so the admin preview matches exactly what the TV renders.
+  function centerLinesVertically(lines, rows) {
+    const content = (lines || []).slice();
+    while (content.length && !(content[0] || '').trim()) content.shift();
+    while (content.length && !(content[content.length - 1] || '').trim()) content.pop();
+    if (content.length >= rows) return content.slice(0, rows);
+    const pad = rows - content.length;
+    const topPad = Math.floor(pad / 2);
+    const botPad = pad - topPad;
+    const out = [];
+    for (let i = 0; i < topPad; i++) out.push('');
+    for (const l of content) out.push(l);
+    for (let i = 0; i < botPad; i++) out.push('');
+    return out;
+  }
+
+  function formatToGrid(lines, rows, cols) {
+    const grid = [];
+    for (let r = 0; r < rows; r++) {
+      const line = (lines[r] || '').toUpperCase();
+      const padTotal = cols - line.length;
+      const padLeft = Math.max(0, Math.floor(padTotal / 2));
+      const padded =
+        ' '.repeat(padLeft) + line +
+        ' '.repeat(Math.max(0, cols - padLeft - line.length));
+      grid.push(padded.split('').slice(0, cols));
+    }
+    return grid;
+  }
+
+  function renderPreview(container, lines) {
+    const rows = (state.remote && state.remote.rows) || 6;
+    const cols = (state.remote && state.remote.cols) || 22;
+    const letterScale = (state.remote && state.remote.letterScale) || 0.78;
+
+    const centered = centerLinesVertically(lines, rows);
+    const grid = formatToGrid(centered, rows, cols);
+
+    clearChildren(container);
+    container.style.setProperty('--preview-aspect', String(cols / rows));
+
+    const gridEl = document.createElement('div');
+    gridEl.className = 'preview-grid';
+    gridEl.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+    gridEl.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const tile = document.createElement('div');
+        tile.className = 'preview-tile';
+        const ch = grid[r][c];
+        tile.textContent = ch === ' ' ? ' ' : ch;
+        gridEl.appendChild(tile);
+      }
+    }
+    container.appendChild(gridEl);
+
+    // Font-size sized to the smaller tile dimension × letterScale.
+    // Defer one frame so layout has happened.
+    requestAnimationFrame(() => {
+      const first = gridEl.querySelector('.preview-tile');
+      if (!first) return;
+      const w = first.getBoundingClientRect().width;
+      const h = first.getBoundingClientRect().height;
+      const size = Math.max(6, Math.min(w, h) * letterScale);
+      gridEl.style.fontSize = size + 'px';
+    });
+  }
+
+  // crypto.randomUUID only exists in secure contexts (https or localhost).
+  // This page is served over plain http on the LAN / tailnet, so we provide
+  // a fallback RFC4122-ish generator using Math.random.
+  function newId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      try { return crypto.randomUUID(); } catch (_) { /* fall through */ }
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : ((r & 0x3) | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // ---------- toast ----------
+  let toastTimer = null;
+  function toast(msg, kind) {
+    kind = kind || 'ok';
+    const el = $('#toast');
+    el.textContent = msg;
+    el.className = 'toast show ' + kind;
+    clearTimeout(toastTimer);
+    // Errors stay longer so you can actually read them.
+    const ms = kind === 'err' ? 6000 : 2200;
+    toastTimer = setTimeout(() => { el.className = 'toast ' + kind; }, ms);
+  }
+
+  // ---------- auth ----------
+  $('#token').value = state.token;
+  $('#save-token').addEventListener('click', () => {
+    state.token = $('#token').value.trim();
+    localStorage.setItem('flipoff-token', state.token);
+    toast('token saved');
+  });
+
+  async function api(path, method, body) {
+    method = method || 'GET';
+    const opts = { method, headers: {} };
+    if (state.token) opts.headers['Authorization'] = 'Bearer ' + state.token;
+    if (body != null) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+    const res = await fetch(path, opts);
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const body = await res.json();
+        detail = body.detail || body.error || JSON.stringify(body);
+      } catch (_) {
+        detail = await res.text().catch(() => '');
+      }
+      const err = new Error(res.status + ' ' + (detail || res.statusText));
+      console.error('API', method, path, 'failed:', err.message);
+      throw err;
+    }
+    return res.json();
+  }
+
+  // ---------- render ----------
+  function render(s) {
+    const bb = $('#btn-blackout');
+    bb.textContent = 'Blackout: ' + (s.blackout ? 'ON' : 'off');
+    bb.classList.toggle('on', s.blackout);
+    bb.classList.toggle('off', !s.blackout);
+
+const bm = $('#btn-mute');
+bm.textContent = 'Mute: ' + (s.muted ? 'ON' : 'off');
+bm.classList.toggle('on', s.muted);
+bm.classList.toggle('off', !s.muted);
+
+const gifUrl = $('#gif-url');
+if (gifUrl && document.activeElement !== gifUrl) gifUrl.value = s.gifUrl || '';
+const gifActive = s.displayMode === 'gif' && !!(s.gifUrl || '').trim();
+const bg = $('#btn-show-gif');
+bg.classList.toggle('on', gifActive);
+bg.classList.toggle('off', !gifActive);
+const bbord = $('#btn-show-board');
+bbord.classList.toggle('on', !gifActive);
+bbord.classList.toggle('off', gifActive);
+
+const slider = $('#interval');
+if (document.activeElement !== slider) slider.value = s.intervalSec;
+$('#interval-label').textContent = slider.value + ' s';
+
+    // Layout sliders
+    const layoutMap = [
+      ['#side-margin',  '#side-margin-label',  s.sideMarginPx,  v => v + ' px'],
+      ['#top-margin',   '#top-margin-label',   s.topMarginPx,   v => v + ' px'],
+      ['#letter-scale', '#letter-scale-label', Math.round((s.letterScale || 0.78) * 100), v => (v / 100).toFixed(2)],
+      ['#rows',         '#rows-label',         s.rows,          v => String(v)],
+      ['#cols',         '#cols-label',         s.cols,          v => String(v)],
+    ];
+    // Brightness lives outside layoutMap: it is pushed instantly by its own
+    // endpoint rather than batched into the "save layout" PUT.
+    const brightInp = $('#gif-brightness');
+    const brightPct = Math.round((s.gifBrightness == null ? 1 : s.gifBrightness) * 100);
+    if (brightInp && document.activeElement !== brightInp) brightInp.value = brightPct;
+    const brightLbl = $('#gif-brightness-label');
+    if (brightLbl) brightLbl.textContent = brightPct + '%';
+
+    for (const [inputSel, labelSel, value, fmt] of layoutMap) {
+      const inp = $(inputSel);
+      if (inp && document.activeElement !== inp && value != null) inp.value = value;
+      if (inp) $(labelSel).textContent = fmt(inp.value);
+    }
+
+    // Keep the gallery's active-highlight in sync with what's on the TV.
+    renderGallery();
+
+    // Re-render quotes if either:
+    //  - not mid-edit (draft buffer is empty), or
+    //  - layout changed (rows/cols/letter/margins) so previews need to redraw
+    const newSig = layoutSignature(s);
+    const layoutChanged = newSig !== lastLayoutKey;
+    lastLayoutKey = newSig;
+    if (!editQuotes || layoutChanged) renderQuotes();
+  }
+
+  // Live slider labels
+  [
+    ['#side-margin',  '#side-margin-label',  v => v + ' px'],
+    ['#top-margin',   '#top-margin-label',   v => v + ' px'],
+    ['#letter-scale', '#letter-scale-label', v => (v / 100).toFixed(2)],
+    ['#rows',         '#rows-label',         v => String(v)],
+    ['#cols',         '#cols-label',         v => String(v)],
+  ].forEach(([inp, lbl, fmt]) => {
+    const el = $(inp);
+    if (el) el.addEventListener('input', () => { $(lbl).textContent = fmt(el.value); });
+  });
+
+  // ---------- gif brightness ----------
+  (() => {
+    const inp = $('#gif-brightness');
+    const lbl = $('#gif-brightness-label');
+    if (!inp) return;
+    let timer = null;
+    let inflight = false;
+
+    async function push(pct) {
+      if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+      if (inflight) return;
+      inflight = true;
+      try {
+        const res = await api('/api/gif/brightness', 'POST', { brightness: pct / 100 });
+        if (state.remote) state.remote.gifBrightness = res.gifBrightness;
+      } catch (err) {
+        toast('dim failed: ' + err.message, 'err');
+      } finally {
+        inflight = false;
+      }
+    }
+
+    inp.addEventListener('input', () => {
+      if (lbl) lbl.textContent = inp.value + '%';
+      clearTimeout(timer);
+      timer = setTimeout(() => push(parseInt(inp.value, 10)), 120);
+    });
+    // Guarantee the final value lands even if the last debounce was swallowed
+    // by an in-flight request.
+    inp.addEventListener('change', () => {
+      clearTimeout(timer);
+      push(parseInt(inp.value, 10));
+    });
+  })();
+
+  $('#save-layout').addEventListener('click', async () => {
+    if (!state.remote) { toast('not connected yet', 'err'); return; }
+    if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+    try {
+      const next = Object.assign({}, state.remote, {
+        sideMarginPx: parseInt($('#side-margin').value, 10),
+        topMarginPx:  parseInt($('#top-margin').value, 10),
+        letterScale:  parseInt($('#letter-scale').value, 10) / 100,
+        rows:         parseInt($('#rows').value, 10),
+        cols:         parseInt($('#cols').value, 10),
+      });
+      const saved = await api('/api/state', 'PUT', next);
+      state.remote = saved;
+      render(saved);
+      toast('layout saved');
+    } catch (err) { toast('save failed: ' + err.message, 'err'); }
+  });
+
+  // ---------- image gallery ----------
+  // The gallery is independent of the quote/layout state: it reads /api/images
+  // and drives the same displayMode=gif / gifUrl fields the GIF panel uses,
+  // just pointed at a locally-uploaded /uploads/... URL instead of an external
+  // link.
+  let galleryImages = [];
+
+  function currentShownUrl() {
+    const s = state.remote;
+    return (s && s.displayMode === 'gif') ? (s.gifUrl || '') : '';
+  }
+
+  function renderGallery() {
+    const root = $('#gallery');
+    const empty = $('#gallery-empty');
+    if (!root) return;
+    clearChildren(root);
+    if (!galleryImages.length) {
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    const shown = currentShownUrl();
+
+    galleryImages.forEach(img => {
+      const isOn = img.url === shown;
+      const tile = document.createElement('div');
+      tile.className = 'gallery-tile' + (isOn ? ' active' : '');
+
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb';
+      const im = document.createElement('img');
+      im.src = img.url;
+      im.alt = img.name;
+      im.loading = 'lazy';
+      thumb.appendChild(im);
+      tile.appendChild(thumb);
+
+      const name = document.createElement('div');
+      name.className = 'gallery-name';
+      name.textContent = img.name;
+      name.title = img.name;
+      tile.appendChild(name);
+
+      const actions = document.createElement('div');
+      actions.className = 'gallery-actions';
+
+      const show = document.createElement('button');
+      show.className = 'primary';
+      show.textContent = isOn ? 'On TV' : 'Show';
+      show.disabled = isOn;
+      show.addEventListener('click', () => showImage(img.url));
+
+      const del = document.createElement('button');
+      del.className = 'danger';
+      del.textContent = 'Delete';
+      del.addEventListener('click', () => deleteImage(img.name));
+
+      actions.append(show, del);
+      tile.appendChild(actions);
+      root.appendChild(tile);
+    });
+  }
+
+  async function loadImages() {
+    try {
+      const res = await fetch('/api/images');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      galleryImages = await res.json();
+      renderGallery();
+    } catch (err) {
+      console.error('loadImages failed:', err);
+    }
+  }
+
+  async function showImage(url) {
+    if (!state.remote) { toast('not connected yet', 'err'); return; }
+    if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+    try {
+      const next = Object.assign({}, state.remote, { displayMode: 'gif', gifUrl: url });
+      const saved = await api('/api/state', 'PUT', next);
+      state.remote = saved;
+      render(saved);
+      toast('shown on TV');
+    } catch (err) { toast('show failed: ' + err.message, 'err'); }
+  }
+
+  async function deleteImage(name) {
+    if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+    try {
+      const res = await api('/api/images/' + encodeURIComponent(name), 'DELETE');
+      galleryImages = (res && res.images) || [];
+      renderGallery();
+      toast('deleted ' + name);
+    } catch (err) { toast('delete failed: ' + err.message, 'err'); }
+  }
+
+  $('#btn-upload').addEventListener('click', async () => {
+    if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+    const input = $('#img-file');
+    const file = input.files && input.files[0];
+    if (!file) { toast('choose an image first', 'err'); return; }
+    try {
+      // Raw-body upload: the file IS the body, name rides in the query string.
+      const res = await fetch('/api/images?filename=' + encodeURIComponent(file.name), {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + state.token,
+          'Content-Type': file.type || 'application/octet-stream',
+        },
+        body: file,
+      });
+      if (!res.ok) {
+        let d = '';
+        try { const b = await res.json(); d = b.detail || b.error || JSON.stringify(b); }
+        catch (_) { d = await res.text().catch(() => ''); }
+        throw new Error(res.status + ' ' + (d || res.statusText));
+      }
+      const data = await res.json();
+      galleryImages = (data && data.images) || [];
+      renderGallery();
+      input.value = '';
+      toast('uploaded ' + (data.image ? data.image.name : 'image'));
+    } catch (err) { toast('upload failed: ' + err.message, 'err'); }
+  });
+
+  $('#btn-gallery-board').addEventListener('click', () => saveDisplayMode('board'));
+
+  // ---------- quote editor ----------
+  // editQuotes is the authoritative buffer while the user is making changes.
+  // When null, the editor mirrors state.remote.quotes. Input handlers mutate
+  // editQuotes directly — no DOM round-trips, no lost data.
+
+  function cloneRemoteQuotes() {
+    if (!state.remote || !Array.isArray(state.remote.quotes)) return [];
+    return state.remote.quotes.map(q => ({
+      id: q.id || newId(),
+      lines: Array.isArray(q.lines) ? q.lines.slice() : [],
+    }));
+  }
+
+  function ensureEditBuffer() {
+    if (!editQuotes) editQuotes = cloneRemoteQuotes();
+    return editQuotes;
+  }
+
+  function getQuotesForDisplay() {
+    return editQuotes || cloneRemoteQuotes();
+  }
+
+  function renderQuotes() {
+    const quotes = getQuotesForDisplay();
+    const rowCount = (state.remote && state.remote.rows) || 4;
+    const colCount = (state.remote && state.remote.cols) || 22;
+    const root = $('#quotes');
+    clearChildren(root);
+
+    quotes.forEach((q, i) => {
+      const card = document.createElement('div');
+      card.className = 'quote';
+      card.dataset.id = q.id;
+
+      const idx = document.createElement('div');
+      idx.className = 'idx';
+      idx.textContent = '#' + (i + 1);
+      card.appendChild(idx);
+
+      // Live mini-preview of this quote — renders the full board with the
+      // current layout settings so you see exactly how it lands on the TV.
+      const preview = document.createElement('div');
+      preview.className = 'quote-preview';
+      card.appendChild(preview);
+      renderPreview(preview, q.lines);
+
+      const lines = document.createElement('div');
+      lines.className = 'lines';
+
+      // Grow q.lines to rowCount so there's a slot for every input.
+      while (q.lines.length < rowCount) q.lines.push('');
+
+      for (let r = 0; r < rowCount; r++) {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.maxLength = colCount;
+        inp.value = q.lines[r] || '';
+        inp.dataset.row = String(r);
+        // Direct mutation into the buffer + live preview refresh.
+        inp.addEventListener('input', () => {
+          const buf = ensureEditBuffer();
+          if (buf[i]) {
+            buf[i].lines[r] = inp.value;
+            renderPreview(preview, buf[i].lines);
+          }
+        });
+        lines.appendChild(inp);
+      }
+      card.appendChild(lines);
+
+      const controls = document.createElement('div');
+      controls.className = 'controls';
+
+      const up = document.createElement('button');
+      up.textContent = '↑';
+      up.disabled = i === 0;
+      up.addEventListener('click', () => {
+        const buf = ensureEditBuffer();
+        if (i > 0) {
+          const tmp = buf[i]; buf[i] = buf[i - 1]; buf[i - 1] = tmp;
+          renderQuotes();
+        }
+      });
+
+      const down = document.createElement('button');
+      down.textContent = '↓';
+      down.disabled = i === quotes.length - 1;
+      down.addEventListener('click', () => {
+        const buf = ensureEditBuffer();
+        if (i < buf.length - 1) {
+          const tmp = buf[i]; buf[i] = buf[i + 1]; buf[i + 1] = tmp;
+          renderQuotes();
+        }
+      });
+
+      const del = document.createElement('button');
+      del.textContent = 'Delete';
+      del.className = 'danger';
+      del.addEventListener('click', () => {
+        const buf = ensureEditBuffer();
+        buf.splice(i, 1);
+        renderQuotes();
+      });
+
+      const spacer = document.createElement('div');
+      spacer.className = 'spacer';
+
+      controls.append(up, down, spacer, del);
+      card.appendChild(controls);
+
+      root.appendChild(card);
+    });
+  }
+
+  $('#btn-add').addEventListener('click', () => {
+    const buf = ensureEditBuffer();
+    const rowCount = (state.remote && state.remote.rows) || 4;
+    buf.push({ id: newId(), lines: new Array(rowCount).fill('') });
+    renderQuotes();
+  });
+
+  $('#btn-save-quotes').addEventListener('click', async () => {
+    if (!state.remote) { toast('not connected yet', 'err'); return; }
+    if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+
+    const rowCount = state.remote.rows || 4;
+    const buf = getQuotesForDisplay();
+    // Truncate or pad each quote to match rowCount before sending.
+    const quotes = buf.map(q => {
+      const lines = (q.lines || []).slice(0, rowCount);
+      while (lines.length < rowCount) lines.push('');
+      return { id: q.id, lines };
+    });
+
+    try {
+      const next = Object.assign({}, state.remote, { quotes });
+      const saved = await api('/api/state', 'PUT', next);
+      editQuotes = null;
+      state.remote = saved;
+      render(saved);
+      toast('saved ' + quotes.length + ' quote' + (quotes.length === 1 ? '' : 's'));
+    } catch (err) {
+      toast('save failed: ' + err.message, 'err');
+    }
+  });
+
+  $('#interval').addEventListener('input', () => {
+    $('#interval-label').textContent = $('#interval').value + ' s';
+  });
+$('#save-interval').addEventListener('click', async () => {
+if (!state.remote) { toast('not connected yet', 'err'); return; }
+if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+try {
+const next = Object.assign({}, state.remote, { intervalSec: parseInt($('#interval').value, 10) });
+      const saved = await api('/api/state', 'PUT', next);
+      state.remote = saved;
+      render(saved);
+      toast('interval saved');
+} catch (err) { toast('save failed: ' + err.message, 'err'); }
+});
+
+async function saveDisplayMode(displayMode) {
+if (!state.remote) { toast('not connected yet', 'err'); return; }
+if (!state.token) { toast('paste your bearer token first', 'err'); return; }
+const gifUrl = $('#gif-url').value.trim();
+if (displayMode === 'gif' && !gifUrl) {
+toast('paste a GIF URL first', 'err');
+return;
+}
+try {
+const next = Object.assign({}, state.remote, { displayMode, gifUrl });
+const saved = await api('/api/state', 'PUT', next);
+state.remote = saved;
+render(saved);
+toast(displayMode === 'gif' ? 'GIF shown' : 'board shown');
+} catch (err) {
+toast('display update failed: ' + err.message, 'err');
+}
+}
+
+$('#btn-show-gif').addEventListener('click', () => saveDisplayMode('gif'));
+$('#btn-show-board').addEventListener('click', () => saveDisplayMode('board'));
+
+$('#btn-blackout').addEventListener('click', async () => {
+try { await api('/api/blackout', 'POST'); } catch (err) { toast(err.message, 'err'); }
+});
+  $('#btn-mute').addEventListener('click', async () => {
+    try { await api('/api/mute', 'POST'); } catch (err) { toast(err.message, 'err'); }
+  });
+  $('#btn-next').addEventListener('click', async () => {
+    try { await api('/api/next', 'POST'); } catch (err) { toast(err.message, 'err'); }
+  });
+  $('#btn-prev').addEventListener('click', async () => {
+    try { await api('/api/prev', 'POST'); } catch (err) { toast(err.message, 'err'); }
+  });
+  $('#btn-refresh').addEventListener('click', async () => {
+    try { await api('/api/refresh', 'POST'); toast('refresh sent'); }
+    catch (err) { toast(err.message, 'err'); }
+  });
+
+  function connectSSE() {
+    const es = new EventSource('/api/events');
+    es.addEventListener('open', () => {
+      $('#conn-dot').className = 'dot ok';
+      $('#conn-text').textContent = 'connected';
+    });
+    es.addEventListener('state', ev => {
+      try {
+        state.remote = JSON.parse(ev.data);
+        render(state.remote);
+      } catch (e) {}
+    });
+    es.onerror = () => {
+      $('#conn-dot').className = 'dot err';
+      $('#conn-text').textContent = 'reconnecting…';
+      es.close();
+      setTimeout(connectSSE, 1500);
+    };
+  }
+
+  fetch('/api/state').then(r => r.json()).then(s => { state.remote = s; render(s); });
+  loadImages();
+  connectSSE();
+  </script>
+</body>
+</html>
