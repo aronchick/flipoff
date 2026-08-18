@@ -1,0 +1,39 @@
+flipoff-kiosk
+=============
+
+This project is a derivative work.
+
+Original
+--------
+
+The split-flap rendering engine originates from FlipOff by magnum6actual:
+
+    https://github.com/magnum6actual/flipoff
+
+Released under the MIT license per that project's README ("MIT — do whatever
+you want with it"). That repository ships no LICENSE file, so the MIT notice
+in LICENSE is reproduced on its behalf.
+
+Files originating upstream, kept essentially unchanged:
+
+    static/js/Board.js
+    static/js/Tile.js
+    static/js/MessageRotator.js
+    static/js/flapAudio.js
+    static/js/SoundEngine.js
+    static/js/KeyboardController.js
+    static/css/*
+
+    static/js/constants.js  — modified: grid dimensions and messages are read
+                              at runtime from the backend instead of being
+                              hardcoded
+
+Added here
+----------
+
+    app/                    FastAPI backend, admin UI, persistent state
+    static/js/kiosk-main.js backend-driven bootstrap
+    Dockerfile
+    openapi.json
+
+Copyright (c) 2026 David Aronchick, MIT licensed.

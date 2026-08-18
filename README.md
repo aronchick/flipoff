@@ -153,5 +153,5 @@ curl -sS $API/openapi.json \
 
 ## License
 
-MIT — see [LICENSE](./LICENSE), which carries both the upstream notice for the
-rendering engine and the notice for the additions here.
+MIT — see [LICENSE](./LICENSE). File-by-file provenance, including which files
+came from upstream, is in [NOTICE](./NOTICE).
