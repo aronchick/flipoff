@@ -1,22 +1,21 @@
-MIT License
+Dual licensed.
 
-Copyright (c) 2026 magnum6actual — original split-flap rendering engine
-Copyright (c) 2026 David Aronchick — backend, admin UI, and HTTP APIs
+Work added by this project — the FastAPI backend, admin UI, image gallery,
+and HTTP APIs — is licensed under either of:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+  * Apache License, Version 2.0 ....... LICENSE-APACHE
+    http://www.apache.org/licenses/LICENSE-2.0
+  * MIT license ...................... LICENSE-MIT
+    http://opensource.org/licenses/MIT
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+at your option.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+One exception, because it is not ours to relicense: the split-flap rendering
+engine originates from https://github.com/magnum6actual/flipoff and remains
+MIT only. See NOTICE for exactly which files those are. MIT is compatible with
+Apache-2.0, so redistributing the whole under Apache-2.0 is fine provided the
+upstream MIT notice in LICENSE-MIT travels with it.
+
+Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in this work shall be dual licensed as above, without
+any additional terms or conditions.

@@ -4,6 +4,7 @@ import json
 import os
 import re
 import secrets
+import sys
 import uuid
 from pathlib import Path
 from typing import Literal
@@ -18,7 +19,21 @@ from sse_starlette.sse import EventSourceResponse
 from pydantic import BaseModel, Field
 
 STATE_PATH = Path(os.environ.get("STATE_PATH", "/config/state.json"))
-AUTH_TOKEN = os.environ.get("AUTH_TOKEN", "changeme")
+DEFAULT_INSECURE_TOKEN = "changeme"
+AUTH_TOKEN = os.environ.get("AUTH_TOKEN", DEFAULT_INSECURE_TOKEN)
+
+if AUTH_TOKEN == DEFAULT_INSECURE_TOKEN:
+    # Not fatal -- a first run on localhost should still work -- but this
+    # must never be silent, or an unconfigured kiosk ends up on a LAN with
+    # every write endpoint effectively open.
+    print(
+        "WARNING: AUTH_TOKEN is unset, so it is the well-known default. "
+        "Every write endpoint is effectively unprotected. Set AUTH_TOKEN "
+        "before exposing this beyond localhost, e.g. "
+        "-e AUTH_TOKEN=\"$(openssl rand -hex 32)\"",
+        file=sys.stderr,
+        flush=True,
+    )
 
 # Uploaded gallery images live under the persistent /config volume so they
 # survive image rebuilds and container recreates, exactly like state.json.
@@ -175,6 +190,11 @@ variable the container was started with. A missing header returns 401, a wrong t
 * `GET /api/events` is a Server-Sent Events stream; every state change is
   published there, so a UI can follow along without polling.
 * State changes persist to disk and survive container restarts.
+
+---
+
+Built with love from the folks at [Expanso](https://expanso.io).
+Split-flap rendering engine by [magnum6actual](https://github.com/magnum6actual/flipoff).
 """
 
 TAGS = [

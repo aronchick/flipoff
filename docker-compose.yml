@@ -1,0 +1,24 @@
+services:
+  flipoff:
+    build: .
+    image: flipoff:latest
+    container_name: flipoff
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    volumes:
+      # State and uploaded images live here, so they survive image rebuilds.
+      - ./config:/config
+    environment:
+      # Required. Generate one with: openssl rand -hex 32
+      AUTH_TOKEN: ${AUTH_TOKEN:?set AUTH_TOKEN in .env - see .env.example}
+      STATE_PATH: /config/state.json
+      UPLOADS_PATH: /config/uploads
+      # Only cosmetic: advertised in the OpenAPI servers block.
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

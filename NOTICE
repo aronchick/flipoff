@@ -1,20 +1,20 @@
 flipoff-kiosk
-=============
+Copyright (c) 2026 David Aronchick / Expanso
 
-This project is a derivative work.
+This product includes software developed by magnum6actual
+(https://github.com/magnum6actual/flipoff).
 
-Original
---------
+---------------------------------------------------------------------------
+Provenance
+---------------------------------------------------------------------------
 
-The split-flap rendering engine originates from FlipOff by magnum6actual:
+This project is a derivative work. The split-flap rendering engine — the tile
+animation, the flap audio, the visual design — originates from FlipOff by
+magnum6actual, released under the MIT license per that project's README
+("MIT — do whatever you want with it"). That repository ships no LICENSE file,
+so the MIT notice is reproduced here on its behalf in LICENSE-MIT.
 
-    https://github.com/magnum6actual/flipoff
-
-Released under the MIT license per that project's README ("MIT — do whatever
-you want with it"). That repository ships no LICENSE file, so the MIT notice
-in LICENSE is reproduced on its behalf.
-
-Files originating upstream, kept essentially unchanged:
+Upstream, kept essentially unchanged (MIT only):
 
     static/js/Board.js
     static/js/Tile.js
@@ -25,15 +25,13 @@ Files originating upstream, kept essentially unchanged:
     static/css/*
 
     static/js/constants.js  — modified: grid dimensions and messages are read
-                              at runtime from the backend instead of being
-                              hardcoded
+                              at runtime from the backend rather than being
+                              hardcoded.
 
-Added here
-----------
+Added by this project (Apache-2.0 OR MIT, at your option):
 
     app/                    FastAPI backend, admin UI, persistent state
     static/js/kiosk-main.js backend-driven bootstrap
     Dockerfile
+    docker-compose.yml
     openapi.json
-
-Copyright (c) 2026 David Aronchick, MIT licensed.
