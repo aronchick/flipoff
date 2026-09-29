@@ -1,0 +1,40 @@
+#!/bin/sh
+# Kiosk session: openbox + chromium full-screen, auto-restart.
+# Waits for the local flipoff container to come up before launching chromium.
+
+xset s off
+xset -dpms
+xset s noblank
+
+unclutter -idle 0.5 -root &
+openbox &
+
+# Wait for the flipoff backend. Docker brings the container back on reboot
+# via --restart unless-stopped, but may race with X starting up.
+# No upper bound: a page that loaded before the backend was up would sit on
+# an error screen forever, since nothing in kiosk mode can reload it.
+until curl -sf -o /dev/null http://localhost:8080/healthz; do
+  sleep 1
+done
+
+# Defeat any stale 'session crashed' flag in chromium's prefs.
+CHROME_DIR="$HOME/snap/chromium/common/chromium/Default"
+[ -f "$CHROME_DIR/Preferences" ] && sed -i \
+  's/"exited_cleanly":false/"exited_cleanly":true/; s/"exit_type":"[^"]*"/"exit_type":"Normal"/' \
+  "$CHROME_DIR/Preferences" 2>/dev/null || true
+
+while true; do
+  chromium \
+    --kiosk --incognito \
+    --noerrdialogs \
+    --disable-infobars \
+    --disable-session-crashed-bubble \
+    --disable-features=TranslateUI \
+    --no-first-run \
+    --password-store=basic \
+    --autoplay-policy=no-user-gesture-required \
+    --start-fullscreen \
+    --window-position=0,0 \
+    http://localhost:8080/
+  sleep 2
+done
