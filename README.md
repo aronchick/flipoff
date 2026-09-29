@@ -61,6 +61,9 @@ chromium --kiosk --incognito --noerrdialogs \
   --autoplay-policy=no-user-gesture-required http://localhost:8080/
 ```
 
+[`deploy/`](./deploy) has the full appliance setup: a self-restarting kiosk
+session, a timer that pulls and rebuilds new commits, and tailnet-only HTTPS.
+
 ## Configuration
 
 | Env var | Default | Meaning |

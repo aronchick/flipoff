@@ -1,0 +1,13 @@
+[Unit]
+Description=Update FlipOff on boot and nightly
+
+[Timer]
+# Boot run gives the network and Tailscale a moment to come up first.
+OnBootSec=2min
+OnCalendar=*-*-* 04:00
+RandomizedDelaySec=15min
+# Catch up on a nightly run missed while the machine was off.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Fast-forward FlipOff from origin and rebuild if it changed
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/default/flipoff-update
+StateDirectory=flipoff-update
+ExecStart=/usr/local/bin/flipoff-update
